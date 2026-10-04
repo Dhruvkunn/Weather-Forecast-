@@ -48,7 +48,7 @@ class WeatherHandler(SimpleHTTPRequestHandler):
         else:
             params["q"] = city
 
-        params["appid"] = os.environ.get("OPENWEATHER_API_KEY", "")
+        params["appid"] = os.environ.get("a6eb68361de0dfd18785829749df2032", "")
         if not params["appid"]:
             self.send_json(
                 {"error": "Weather service is not configured. Set OPENWEATHER_API_KEY and restart the app."},

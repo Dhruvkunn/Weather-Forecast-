@@ -2,7 +2,7 @@ import json
 import os
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlencode, urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 import requests
 
@@ -27,18 +27,14 @@ class WeatherHandler(SimpleHTTPRequestHandler):
         latitude = query.get("lat", [""])[0]
         longitude = query.get("lon", [""])[0]
 
+        if bool(latitude) != bool(longitude):
+            self.send_json({"error": "Provide both location coordinates."}, 400)
+            return
         if not city and not (latitude and longitude):
             self.send_json({"error": "Enter a city or share your location."}, 400)
             return
 
-        params = {"appid": os.environ.get("OPENWEATHER_API_KEY", ""), "units": "metric"}
-        if not params["appid"]:
-            self.send_json(
-                {"error": "Weather service is not configured. Set OPENWEATHER_API_KEY and restart the app."},
-                503,
-            )
-            return
-
+        params = {"units": "metric"}
         if latitude and longitude:
             try:
                 lat, lon = float(latitude), float(longitude)
@@ -51,6 +47,14 @@ class WeatherHandler(SimpleHTTPRequestHandler):
             params.update({"lat": lat, "lon": lon})
         else:
             params["q"] = city
+
+        params["appid"] = os.environ.get("a6eb68361de0dfd18785829749df2032", "")
+        if not params["appid"]:
+            self.send_json(
+                {"error": "Weather service is not configured. Set OPENWEATHER_API_KEY and restart the app."},
+                503,
+            )
+            return
 
         try:
             response = requests.get(WEATHER_URL, params=params, timeout=10)

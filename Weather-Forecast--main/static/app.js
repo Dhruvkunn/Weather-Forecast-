@@ -30,6 +30,12 @@ function updateUnitButtons() {
   }
 }
 
+function setDetailValue(selector, value, unit) {
+  const element = document.querySelector(selector);
+  element.firstChild.nodeValue = String(value);
+  element.querySelector("small").textContent = unit;
+}
+
 function renderWeather(data) {
   weatherData = data;
   const fahrenheit = currentUnit === "f";
@@ -54,12 +60,14 @@ function renderWeather(data) {
   document.querySelector("#place-name").textContent = data.name;
   document.querySelector("#place-country").textContent = data.country;
   document.querySelector("#condition-chip").textContent = data.main.toUpperCase();
-  document.querySelector("#humidity-value").innerHTML = `${data.humidity}<small>%</small>`;
-  document.querySelector("#wind-value").innerHTML =
-    `${windSpeed.toFixed(1)}<small> ${fahrenheit ? "mph" : "m/s"}</small>`;
-  document.querySelector("#pressure-value").innerHTML = `${data.pressure}<small> hPa</small>`;
-  document.querySelector("#visibility-value").innerHTML =
-    `${data.visibility == null ? "--" : (data.visibility / 1000).toFixed(1)}<small> km</small>`;
+  setDetailValue("#humidity-value", data.humidity, "%");
+  setDetailValue("#wind-value", windSpeed.toFixed(1), fahrenheit ? " mph" : " m/s");
+  setDetailValue("#pressure-value", data.pressure, " hPa");
+  setDetailValue(
+    "#visibility-value",
+    data.visibility == null ? "--" : (data.visibility / 1000).toFixed(1),
+    " km",
+  );
   document.querySelector("#sunrise-time").textContent = timeAtLocation(data.sunrise, offset);
   document.querySelector("#sunset-time").textContent = timeAtLocation(data.sunset, offset);
   document.querySelector("#header-date").textContent = localNow.toLocaleDateString("en-US", {
@@ -72,10 +80,10 @@ function renderWeather(data) {
     `UPDATED ${timeAtLocation(Math.floor(Date.now() / 1000), offset).toUpperCase()} LOCAL`;
 
   const daylightNote = document.querySelector("#daylight-note");
-  const localSeconds = Math.floor(Date.now() / 1000) + offset;
-  if (localSeconds < data.sunrise) {
+  const now = Math.floor(Date.now() / 1000);
+  if (now < data.sunrise) {
     daylightNote.textContent = "The day is just around the corner.";
-  } else if (localSeconds > data.sunset) {
+  } else if (now > data.sunset) {
     daylightNote.textContent = "The day has tucked itself in for now.";
   } else {
     daylightNote.textContent = "A little more daylight goes a long way.";
